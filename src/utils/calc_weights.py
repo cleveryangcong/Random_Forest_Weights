@@ -1,6 +1,9 @@
-import sklearn.ensemble._forest as forest_utils
+'''
+Methods for calculating the weights of regression trees and regression random forests
+'''
+#Basics:
 from collections import Counter
-
+import numpy as np
 
 def calc_weights_tree(tree, X_train_base, X_test, bootstrap, max_samples):
     """

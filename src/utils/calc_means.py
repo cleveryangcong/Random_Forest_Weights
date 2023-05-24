@@ -1,3 +1,9 @@
+'''
+Methods for calculating the mean predictions of trees and rf
+'''
+
+import numpy as np
+
 def calc_mean_tree(weights_tree, y_train):
     """
         Function that calculates the mean prediction of tree based on the weights of a given X_test input and the y_train sample
