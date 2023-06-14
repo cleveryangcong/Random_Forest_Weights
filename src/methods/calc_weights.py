@@ -4,6 +4,9 @@ Methods for calculating the weights of regression trees and regression random fo
 #Basics:
 from collections import Counter
 import numpy as np
+import sklearn.ensemble._forest as forest_utils
+
+
 
 def calc_weights_tree(tree, X_train_base, X_test, bootstrap, max_samples):
     """
@@ -108,7 +111,7 @@ def calc_weights_rf(rf, X_train_base, X_test, bootstrap, max_samples):
         bootstrap(boolean): whether bootstrapping is used or not
         max_samples(float or int): if bootstrap == True, number of samples to draw from X to train
     Returns:
-        array: 3-dim-array with weights of rf
+        array: 3-dim-array with weights of rf shape (num_trees, num_X_test, num_leaves)
     """
     weights_rf = []
     for tree in rf.estimators_:
