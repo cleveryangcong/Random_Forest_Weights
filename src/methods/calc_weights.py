@@ -5,6 +5,7 @@ Methods for calculating the weights of regression trees and regression random fo
 from collections import Counter
 import numpy as np
 import sklearn.ensemble._forest as forest_utils
+from tqdm import tqdm
 
 
 
@@ -114,7 +115,7 @@ def calc_weights_rf(rf, X_train_base, X_test, bootstrap, max_samples):
         array: 3-dim-array with weights of rf shape (num_trees, num_X_test, num_leaves)
     """
     weights_rf = []
-    for tree in rf.estimators_:
+    for tree in tqdm(rf.estimators_):
         weights_rf.append(
             calc_weights_tree(tree, X_train_base, X_test, bootstrap, max_samples)
         )
