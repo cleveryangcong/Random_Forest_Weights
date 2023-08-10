@@ -34,7 +34,7 @@ def compute_rf_weights(args):
         
 if __name__ == "__main__":
     # 1. Load Data:
-    df = pd.read_csv("datasets/energy_data_hourly.csv", index_col="datetime")
+    df = pd.read_csv("/home/dchen/Random_Forest_Weights/src_rf/data/energy_data_hourly.csv", index_col="datetime")
     df.index = pd.to_datetime(df.index)
     
     # 2. Train Test Split:
@@ -58,13 +58,14 @@ if __name__ == "__main__":
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
     batch_size = 50
-    file_path = "/home/dchen/Random_Forest_Weights/data/rf_weights/energy_data/energy_weights.npy"
-
+    file_path = "/home/dchen/Random_Forest_Weights/data/rf_weights/energy_weights.npy"
+    # Define the number of processes you want to run in parallel
+    max_workers = 3
     # Split the data into batches
     batches = [(X_test[i:i+batch_size], i, i+batch_size) for i in range(0, num_samples, batch_size)]
 
     # Use ProcessPoolExecutor to parallelize computation
-    with ProcessPoolExecutor() as executor:
+    with ProcessPoolExecutor(max_workers = max_workers) as executor:
         args = [(rf, X_train, batch, bootstrap, max_samples) for batch, _, _ in batches]
         results = list(executor.map(compute_rf_weights, args))
 
