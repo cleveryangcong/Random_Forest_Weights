@@ -18,6 +18,7 @@ from sklearn.model_selection import train_test_split
 # Path setup
 import sys
 import os
+from concurrent.futures import ProcessPoolExecutor
 
 sys.path.append("/home/dchen/Random_Forest_Weights/")
 # my functions:
@@ -25,16 +26,11 @@ from src_rf.methods.calc_mean import *
 from src_rf.methods.calc_weights import *
 from src_rf.methods.calc_dist import *
 
-def calc_weight_chunk(rf, X_train, X_test, bootstrap, max_samples):
-    rf_weights = calc_weights_rf(rf, X_train, X_test, bootstrap, max_samples)
-    
-        
-        
-        
-        
-        
-        
-        
+
+
+def compute_rf_weights(args):
+    rf, X_train, batch, bootstrap, max_samples = args
+    return calc_weights_rf(rf, X_train, batch, bootstrap, max_samples)     
         
 if __name__ == "__main__":
     # 1. Load Data:
@@ -62,15 +58,18 @@ if __name__ == "__main__":
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
     batch_size = 50
-
     file_path = "/home/dchen/Random_Forest_Weights/data/rf_weights/energy_data/energy_weights.npy"
 
-    for start_idx in range(0, num_samples, batch_size):
-        end_idx = min(start_idx + batch_size, num_samples)
-        batch = X_test[start_idx:end_idx]
+    # Split the data into batches
+    batches = [(X_test[i:i+batch_size], i, i+batch_size) for i in range(0, num_samples, batch_size)]
 
-        rf_weights = calc_weights_rf(rf, X_train, batch, bootstrap, max_samples)
+    # Use ProcessPoolExecutor to parallelize computation
+    with ProcessPoolExecutor() as executor:
+        args = [(rf, X_train, batch, bootstrap, max_samples) for batch, _, _ in batches]
+        results = list(executor.map(compute_rf_weights, args))
 
+    # Now, save the results batch-wise to ensure order
+    for rf_weights in results:
         # Load existing data, concatenate and save back
         if os.path.exists(file_path):
             existing_data = np.load(file_path)
@@ -90,36 +89,7 @@ if __name__ == "__main__":
         
         
         
-import os
-import numpy as np
-from concurrent.futures import ProcessPoolExecutor
 
-def compute_rf_weights(args):
-    rf, X_train, batch, bootstrap, max_samples = args
-    return calc_weights_rf(rf, X_train, batch, bootstrap, max_samples)
-
-num_samples = X_test.shape[0]
-batch_size = 50
-file_path = "/home/dchen/Random_Forest_Weights/data/rf_weights/energy_data/energy_weights.npy"
-
-# Split the data into batches
-batches = [(X_test[i:i+batch_size], i, i+batch_size) for i in range(0, num_samples, batch_size)]
-
-# Use ProcessPoolExecutor to parallelize computation
-with ProcessPoolExecutor() as executor:
-    args = [(rf, X_train, batch, bootstrap, max_samples) for batch, _, _ in batches]
-    results = list(executor.map(compute_rf_weights, args))
-
-# Now, save the results batch-wise to ensure order
-for rf_weights in results:
-    # Load existing data, concatenate and save back
-    if os.path.exists(file_path):
-        existing_data = np.load(file_path)
-        combined_data = np.concatenate([existing_data, rf_weights], axis=0)
-    else:
-        combined_data = rf_weights
-
-    np.save(file_path, combined_data)
         
         
         
