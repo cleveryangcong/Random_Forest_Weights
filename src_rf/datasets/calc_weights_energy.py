@@ -60,7 +60,7 @@ if __name__ == "__main__":
     batch_size = 50
     file_path = "/home/dchen/Random_Forest_Weights/data/rf_weights/energy_weights.npy"
     # Define the number of processes you want to run in parallel
-    max_workers = 3
+    max_workers = 2
     # Split the data into batches
     batches = [(X_test[i:i+batch_size], i, i+batch_size) for i in range(0, num_samples, batch_size)]
 
