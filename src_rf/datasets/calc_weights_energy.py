@@ -66,7 +66,7 @@ if __name__ == "__main__":
     batches = [(X_test[i:i + batch_size], i, i + batch_size) for i in range(0, num_samples, batch_size)]
 
     # Use ProcessPoolExecutor to parallelize computation
-    with ProcessPoolExecutor(max_workers=2) as executor:  # Set max_workers to 2
+    with ProcessPoolExecutor(max_workers=1) as executor:  # Set max_workers to 2
         futures = [executor.submit(compute_rf_weights, (rf, X_train, batch, bootstrap, max_samples)) for batch, _, _ in batches]
 
         for future in futures:  # Iterate over futures in the order they were submitted
