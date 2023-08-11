@@ -58,15 +58,15 @@ if __name__ == "__main__":
 
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
-    batch_size = 50
-    file_path = "/home/dchen/Random_Forest_Weights/data/rf_weights/energy_weights.npy"
+    batch_size = 25
+    file_path = "/Data/Delong_BA_Data/rf_weights/energy_weights.npy"
     # Define the number of processes you want to run in parallel
     max_workers = 2
     # Split the data into batches
     batches = [(X_test[i:i + batch_size], i, i + batch_size) for i in range(0, num_samples, batch_size)]
 
     # Use ProcessPoolExecutor to parallelize computation
-    with ProcessPoolExecutor(max_workers=1) as executor:  # Set max_workers to 2
+    with ProcessPoolExecutor(max_workers=3) as executor:  # Set max_workers to 2
         futures = [executor.submit(compute_rf_weights, (rf, X_train, batch, bootstrap, max_samples)) for batch, _, _ in batches]
 
         for future in futures:  # Iterate over futures in the order they were submitted
