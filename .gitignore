@@ -1,6 +1,7 @@
 # Ignore compiled Python files
 *.pyc
-
+# Ignore data weights to much memory
+/data/rf_weights/*
 # Ignore local environment files
 .env
 
