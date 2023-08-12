@@ -114,9 +114,11 @@ def calc_weights_rf(rf, X_train_base, X_test, bootstrap, max_samples):
     Returns:
         array: 3-dim-array with weights of rf shape (num_trees, num_X_test, num_leaves)
     """
-    weights_rf = []
-    for tree in tqdm(rf.estimators_):
-        weights_rf.append(
-            calc_weights_tree(tree, X_train_base, X_test, bootstrap, max_samples)
-        )
-    return np.array(weights_rf)
+    num_trees = len(rf.estimators_)
+    # Assuming the shape of the weights from a single tree will always be (num_X_test, num_leaves), initializing with zeros
+    weights_rf = np.zeros((num_trees, X_test.shape[0], X_train_base.shape[0]))
+
+    for idx, tree in tqdm(enumerate(rf.estimators_)):
+        weights_rf[idx] = calc_weights_tree(tree, X_train_base, X_test, bootstrap, max_samples)
+
+    return weights_rf
