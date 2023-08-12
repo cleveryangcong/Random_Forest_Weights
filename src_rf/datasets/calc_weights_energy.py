@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
-    batch_size = 100
+    batch_size = 50
     file_path = "/Data/Delong_BA_Data/rf_weights/energy_weights.npy"
     # Split the data into batches
     batches = [(X_test[i:i + batch_size], i, i + batch_size) for i in range(0, num_samples, batch_size)]
