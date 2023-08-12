@@ -51,11 +51,13 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.3 ,shuffl
 
 # Define the hyperparameters and their possible values
 param_dist = {
-    'n_estimators': np.arange(100, 1000, 100),
-    'max_depth': [None, 2, 5, 10, 25, 50 ,70, 100],
-    'min_samples_split': [2, 5, 10 ,20, 35, 50],
-    'min_samples_leaf': [1, 3, 5, 10, 15, 25, 35, 50],
-    'bootstrap': [True, False],
+    'n_estimators': [600, 700, 800],
+    'max_depth': [None,10, 40, 50, 60],
+    'min_samples_split': [2,3, 5,7, 10],
+    'min_samples_leaf': [5, 10, 15, 20],
+    'bootstrap': [True],
+    'max_samples': [None, 0.9, 0.8, 0.7, 0.6, 0.5]
+    
 }
 
 
@@ -65,7 +67,7 @@ tscv = TimeSeriesSplit(n_splits=5)
 random_search = RandomizedSearchCV(
     rf, 
     param_distributions=param_dist, 
-    n_iter=200, 
+    n_iter=100, 
     cv=tscv, 
     verbose=1, 
     scoring='neg_mean_squared_error', # or any other appropriate scoring metric
@@ -77,7 +79,7 @@ random_search.fit(X_train, y_train)
 
 rf_cv_results = pd.DataFrame(random_search.cv_results_)
 
-save_path = "/Data/Delong_BA_Data/rf_weights/rf_cv_results.csv"
+save_path = "/Data/Delong_BA_Data/rf_weights/rf_cv_results_2.csv"
 rf_cv_results.to_csv(save_path, index=False)
 
 

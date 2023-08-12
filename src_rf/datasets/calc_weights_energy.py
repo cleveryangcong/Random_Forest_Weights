@@ -47,26 +47,28 @@ if __name__ == "__main__":
     # 3. Random Forest:
     # 3.1 Parameters for Weight_Calculation:
     bootstrap = True
-    max_samples = 0.8
+    max_samples = 0.5
     # 3.2 Parameters for RF
+    n_estimators = 700
+    min_samples_split = 5
+    min_samples_leaf = 5
+    max_depth = 40.0
 
     # 3.3 Model Training
     rf = RandomForestRegressor(
-        bootstrap=bootstrap, max_samples=max_samples, verbose=0, n_jobs=-1, random_state = 42
+        bootstrap=bootstrap, max_samples=max_samples,n_estimators = n_estimators, min_samples_split = min_samples_split, min_samples_leaf = min_samples_leaf, max_depth = max_depth, verbose=0, n_jobs=-1, random_state = 42
     )
     rf.fit(X_train, y_train)
 
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
-    batch_size = 25
+    batch_size = 100
     file_path = "/Data/Delong_BA_Data/rf_weights/energy_weights.npy"
-    # Define the number of processes you want to run in parallel
-    max_workers = 1
     # Split the data into batches
     batches = [(X_test[i:i + batch_size], i, i + batch_size) for i in range(0, num_samples, batch_size)]
 
     # Use ProcessPoolExecutor to parallelize computation
-    with ProcessPoolExecutor(max_workers=2) as executor:  # Set max_workers to 2
+    with ProcessPoolExecutor(max_workers=5) as executor:  # Set max_workers to 2
         futures = [executor.submit(compute_rf_weights, (rf, X_train, batch, bootstrap, max_samples)) for batch, _, _ in batches]
 
         for future in futures:  # Iterate over futures in the order they were submitted
