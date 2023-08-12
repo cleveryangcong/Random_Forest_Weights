@@ -49,7 +49,7 @@ if __name__ == "__main__":
     bootstrap = True
     max_samples = 0.5
     # 3.2 Parameters for RF
-    n_estimators = 700
+    n_estimators = 300
     min_samples_split = 5
     min_samples_leaf = 5
     max_depth = 40.0
