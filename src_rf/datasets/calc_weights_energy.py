@@ -42,7 +42,7 @@ if __name__ == "__main__":
     X = df.drop('total_energy_usage', axis=1).values
     y = df['total_energy_usage'].values
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=False, random_state=42)
 
     # 3. Random Forest:
     # 3.1 Parameters for Weight_Calculation:
@@ -61,25 +61,32 @@ if __name__ == "__main__":
     batch_size = 25
     file_path = "/Data/Delong_BA_Data/rf_weights/energy_weights.npy"
     # Define the number of processes you want to run in parallel
-    max_workers = 2
+    max_workers = 1
     # Split the data into batches
     batches = [(X_test[i:i + batch_size], i, i + batch_size) for i in range(0, num_samples, batch_size)]
 
     # Use ProcessPoolExecutor to parallelize computation
-    with ProcessPoolExecutor(max_workers=3) as executor:  # Set max_workers to 2
+    with ProcessPoolExecutor(max_workers=1) as executor:  # Set max_workers to 2
         futures = [executor.submit(compute_rf_weights, (rf, X_train, batch, bootstrap, max_samples)) for batch, _, _ in batches]
 
         for future in futures:  # Iterate over futures in the order they were submitted
             rf_weights = future.result()
 
-            # Save rf_weights immediately to disk
             if os.path.exists(file_path):
-                existing_data_shape = np.load(file_path, mmap_mode='r').shape
-                new_shape = (existing_data_shape[0] + rf_weights.shape[0],) + rf_weights.shape[1:]
-                combined_data = np.memmap(file_path, dtype=rf_weights.dtype, mode='r+', shape=new_shape)
-                combined_data[-rf_weights.shape[0]:] = rf_weights
+                existing_data = np.load(file_path)
+
+                new_shape = (existing_data.shape[0], existing_data.shape[1] + rf_weights.shape[1], existing_data.shape[2])
+                combined_data = np.zeros(new_shape, dtype=existing_data.dtype)
+
+                combined_data[:, :existing_data.shape[1], :] = existing_data
+                combined_data[:, existing_data.shape[1]:, :] = rf_weights
+
+                np.save(file_path, combined_data)
+
+                del existing_data  # Clear memory
             else:
                 np.save(file_path, rf_weights)
+
 
             del rf_weights  # Explicitly delete to help with memory management
             gc.collect()  # Call garbage collector to free up memory
