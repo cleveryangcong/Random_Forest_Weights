@@ -6,6 +6,7 @@ from collections import Counter
 import numpy as np
 import sklearn.ensemble._forest as forest_utils
 from tqdm import tqdm
+from collections import defaultdict
 
 
 
