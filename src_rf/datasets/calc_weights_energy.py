@@ -4,22 +4,15 @@ Parallize calculation of weights in for loop
 Save calculated weights, in correct order
 '''
 
-
-# Basics
+import sys
+import os
 import pandas as pd
 import numpy as np
 import gc  # garbage collector
-
-# Model
 from sklearn.ensemble import RandomForestRegressor
-
-# Helpful:
 from sklearn.model_selection import train_test_split
-
-# Path setup
-import sys
-import os
 from concurrent.futures import ProcessPoolExecutor
+from scipy.sparse import save_npz, load_npz
 
 sys.path.append("/home/dchen/Random_Forest_Weights/")
 # my functions:
@@ -27,11 +20,29 @@ from src_rf.methods.calc_mean import *
 from src_rf.methods.calc_weights import *
 from src_rf.methods.calc_dist import *
 
-
 def compute_rf_weights(args):
     rf, X_train, batch, bootstrap, max_samples = args
     return calc_weights_rf(rf, X_train, batch, bootstrap, max_samples)
 
+def save_list_of_sparse_matrices(rf_weights, dir_path):
+    """Save each sparse matrix in the list to a separate file within the specified directory."""
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+    for idx, weights in enumerate(rf_weights):
+        save_npz(os.path.join(dir_path, f"tree_{idx}.npz"), weights)
+
+def load_and_concat_sparse_matrices_from_dir(dir_path, num_trees):
+    """Load and concatenate sparse matrices from a directory."""
+    combined_data_list = []
+
+    for idx in range(num_trees):
+        # For each tree, load all the sparse matrices and concatenate them
+        tree_files = sorted([os.path.join(dir_path, file) for file in os.listdir(dir_path) if file.startswith(f"tree_{idx}_")])
+        matrices = [load_npz(file) for file in tree_files]
+        combined_data_list.append(sp.vstack(matrices))
+
+    return combined_data_list
 
 if __name__ == "__main__":
     # 1. Load Data:
@@ -62,36 +73,28 @@ if __name__ == "__main__":
 
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
-    batch_size = 25
-    file_path = "/Data/Delong_BA_Data/rf_weights/energy_weights.npy"
+    batch_size = 500
+    base_dir = "/Data/Delong_BA_Data/rf_weights/"
+
     # Split the data into batches
     batches = [(X_test[i:i + batch_size], i, i + batch_size) for i in range(0, num_samples, batch_size)]
 
     # Use ProcessPoolExecutor to parallelize computation
-    with ProcessPoolExecutor(max_workers=2) as executor:  # Set max_workers to 2
+    with ProcessPoolExecutor(max_workers=20) as executor:  # Set max_workers to 2
         futures = [executor.submit(compute_rf_weights, (rf, X_train, batch, bootstrap, max_samples)) for batch, _, _ in batches]
 
-        for future in futures:  # Iterate over futures in the order they were submitted
+        for batch_idx, future in enumerate(futures):  # Iterate over futures in the order they were submitted
             rf_weights = future.result()
 
-            if os.path.exists(file_path):
-                existing_data = np.load(file_path)
-
-                new_shape = (existing_data.shape[0], existing_data.shape[1] + rf_weights.shape[1], existing_data.shape[2])
-                combined_data = np.zeros(new_shape, dtype=existing_data.dtype)
-
-                combined_data[:, :existing_data.shape[1], :] = existing_data
-                combined_data[:, existing_data.shape[1]:, :] = rf_weights
-
-                np.save(file_path, combined_data)
-
-                del existing_data  # Clear memory
-            else:
-                np.save(file_path, rf_weights)
-
+            batch_dir = os.path.join(base_dir, f"batch_{batch_idx}")
+            save_list_of_sparse_matrices(rf_weights, batch_dir)
 
             del rf_weights  # Explicitly delete to help with memory management
             gc.collect()  # Call garbage collector to free up memory
+
+    # After all the futures are done, combine all the results for each tree
+    num_trees = len(rf_weights)  # assuming all rf_weights lists are of the same length
+    combined_rf_weights = load_and_concat_sparse_matrices_from_dir(base_dir, num_trees)
 
         
         
