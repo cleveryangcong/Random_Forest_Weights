@@ -39,11 +39,9 @@ rf_weights = load_weights_energy()
 # Calculate Quantiles
 rf_dist = calc_dist_rf(rf_weights, y_train)
 
-# Parallelizing the computation using joblib
-quantile_results = Parallel(n_jobs=-1)(delayed(calc_quantile_rf)(rf_dist, q, y_train) for q in quantiles)
-
-# Combining the results into the quantile_preds array
-quantile_preds = np.column_stack(quantile_results)
+quantile_preds = np.zeros((len(y_test), 5))
+for count, q in enumerate(quantiles):
+    quantile_preds[:,count] = np.array(calc_quantile_rf(rf_dist,q, y_train))
 
 path = '/Data/Delong_BA_Data/rf_weights/energy_quantile_preds.npy'
 np.save(path, quantile_preds)
