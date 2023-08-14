@@ -1,6 +1,8 @@
 from scipy.sparse import csr_matrix
 from scipy.optimize import bisect
 import numpy as np
+from tqdm import tqdm
+
 def calc_dist_rf(weights_rf, y_train):
     """
     Function that calculates the empirical cumulative distribution of a rf based on the weights of a given X_test input and the y_train sample
@@ -25,6 +27,8 @@ def calc_dist_rf(weights_rf, y_train):
         rf_cdfs.append(cdf_func)
     return rf_cdfs
 
+
+
 def calc_quantile_rf(cdfs, q, y_train):
     """
     Estimate the q-th quantiles of the distribution defined by the given CDFs.
@@ -36,7 +40,7 @@ def calc_quantile_rf(cdfs, q, y_train):
         list of fcts: The estimated q-th quantiles.
     """
     quantiles = []
-    for i in range(len(cdfs)):
+    for i in tqdm(range(len(cdfs)), desc="Processing CDFs"):
         # Define a function that is zero when cdf(y) = q
         func = lambda y: cdfs[i](y) - q
 
