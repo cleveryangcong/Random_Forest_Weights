@@ -36,15 +36,20 @@ def calc_quantile_rf(cdfs, q, y_train):
         cdfs (list): The CDFs, list of functions.
         q(float): The desired quantile, a number between 0 and 1.
         y_train(array): The training data, a 1D numpy array.
-    Returns:
+    Returns: 
         list of fcts: The estimated q-th quantiles.
     """
     quantiles = []
     for i in tqdm(range(len(cdfs)), desc="Processing CDFs"):
         # Define a function that is zero when cdf(y) = q
         func = lambda y: cdfs[i](y) - q
-
-        # Use the bisection method to find the root of this function
-        quantiles.append(bisect(func, min(y_train), max(y_train)))
+        if func(min(y_train)) > 0:
+            quantiles.append(min(y_train))
+            continue
+        elif func(max(y_train)) < 0:
+            quantiles.append(max(y_train))
+            continue
+        else:
+            quantiles.append(bisect(func, min(y_train), max(y_train)))
 
     return quantiles
