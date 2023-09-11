@@ -13,7 +13,7 @@ sys.path.append("/home/dchen/Random_Forest_Weights/")
 from src_rf.methods.calc_mean import *
 from src_rf.methods.calc_weights import *
 from src_rf.methods.calc_dist import *
-from src_rf.datasets.qrf_2.load_weights_qrf_2.py import * 
+from src_rf.datasets.qrf_2.load_weights_qrf_2 import * 
 
 # Setup pandas display options
 pd.set_option('display.max_columns', None)
