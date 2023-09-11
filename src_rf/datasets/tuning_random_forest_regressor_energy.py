@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
+"""
+0. Tuning
+--> Should be the first step in a new dataset
+Tuning of hyperparameters of a normal regression random forest from sklearn. Idea: Hyperparameters are similar to the ones that would be used for a quantile random forest
+"""
 
 # Path setup
 import sys

@@ -1,4 +1,6 @@
 '''
+1. Calculate weights in batches
+--> Should be run after deciding on the hyperparameters of the quantile random forest
 Run calc_weights function separately for different chunks of the test dataset through a for loop -> Avoid memory error
 Parallize calculation of weights in for loop
 Save calculated weights, in correct order
@@ -74,7 +76,11 @@ if __name__ == "__main__":
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
     batch_size = 500
-    base_dir = "/Data/Delong_BA_Data/rf_weights/"
+    dir_name = ''
+    base_dir = f"/Data/Delong_BA_Data/rf_weights/{dir_name}/"
+    # Check if directory exists, and if not, create it
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
     # Split the data into batches
     batches = [(X_test[i:i + batch_size], i, i + batch_size) for i in range(0, num_samples, batch_size)]

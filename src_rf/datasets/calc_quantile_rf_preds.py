@@ -34,7 +34,7 @@ y = df['total_energy_usage']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=False, random_state=42)
 
 # Load Random Forest Weights
-rf_weights = load_weights_energy()
+rf_weights = load_weights_energy("/Data/Delong_BA_Data/rf_weights/")
 
 # Calculate Quantiles
 rf_dist = calc_dist_rf(rf_weights, y_train)
