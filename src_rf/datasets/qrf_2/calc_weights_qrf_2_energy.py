@@ -112,6 +112,3 @@ if __name__ == "__main__":
             del rf_weights  # Explicitly delete to help with memory management
             gc.collect()  # Call garbage collector to free up memory
 
-    # After all the futures are done, combine all the results for each tree
-    num_trees = len(rf_weights)  # assuming all rf_weights lists are of the same length
-    combined_rf_weights = load_and_concat_sparse_matrices_from_dir(base_dir, num_trees)
