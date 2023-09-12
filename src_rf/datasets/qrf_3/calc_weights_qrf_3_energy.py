@@ -50,20 +50,26 @@ if __name__ == "__main__":
     # 1. Load Data:
     df = pd.read_csv("/home/dchen/Random_Forest_Weights/src_rf/data/energy_data_hourly.csv", index_col="datetime")
     df.index = pd.to_datetime(df.index)
-    # Data manipulation to purely time series:
     df.drop(['residual_energy_usage', 'pump_storage'], inplace = True, axis =  1)
     # Extract the year from the index
     df['Year'] = df.index.year
-    
-    year_dummies = pd.get_dummies(df['Year'], prefix='Year')
-    month_dummies = pd.get_dummies(df['month'], prefix='Month')
-    hour_dummies = pd.get_dummies(df['hour'], prefix='Hour')
+    # 1. Extract weekday name
+    df['weekday'] = df.index.day_name()
 
-    # Drop the original columns and join with dummy variables
-    df = df.drop(['Year', 'month', 'hour'], axis=1)
-    df = df.join([year_dummies, month_dummies, hour_dummies])
-    
-    df['Count'] = range(0, df.shape[0])
+    # 2. Ordinal encode 'hour', 'weekday', 'month', and 'Year'
+    # (In this case, 'hour', 'month', and 'Year' are already ordinal, so just encoding 'weekday')
+    weekday_ordering = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    df['weekday'] = df['weekday'].astype(pd.CategoricalDtype(categories=weekday_ordering, ordered=True))
+    df['weekday'] = df['weekday'].cat.codes
+
+    # No need to change the 'Year' column as you want it in ordinal form
+
+    # 3. Add a count variable
+    df['Count'] = range(df.shape[0])
+
+    # Drop unnecessary columns
+    columns_to_drop = ['Friday', 'Monday', 'Saturday', 'Sunday', 'Thursday', 'Tuesday', 'Wednesday']
+    df.drop(columns=columns_to_drop, inplace=True)
     
     # 2. Train Test Split:
     X = df.drop('total_energy_usage', axis=1).values
@@ -74,12 +80,12 @@ if __name__ == "__main__":
     # 3. Random Forest:
     # 3.1 Parameters for Weight_Calculation:
     bootstrap = True
-    max_samples = 0.5
+    max_samples = 0.3
     # 3.2 Parameters for RF
     n_estimators = 300
     min_samples_split = 5
-    min_samples_leaf = 5
-    max_depth = 40.0
+    min_samples_leaf = 10
+    max_depth = 5
 
     # 3.3 Model Training
     rf = RandomForestRegressor(
@@ -90,7 +96,7 @@ if __name__ == "__main__":
     # 4. Parallel Processing:
     num_samples = X_test.shape[0]
     batch_size = 500
-    dir_name = 'qrf_2'
+    dir_name = 'qrf_3'
     base_dir = f"/Data/Delong_BA_Data/rf_weights/{dir_name}/"
     # Check if directory exists, and if not, create it
     if not os.path.exists(base_dir):
