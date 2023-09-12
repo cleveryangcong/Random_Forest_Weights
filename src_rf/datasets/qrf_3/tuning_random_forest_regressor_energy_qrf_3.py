@@ -42,21 +42,26 @@ from src_rf.methods.calc_dist import *
 
 df = pd.read_csv("/home/dchen/Random_Forest_Weights/src_rf/data/energy_data_hourly.csv"
                  , index_col = 'datetime', parse_dates=True)
-
-# Data manipulation to purely time series:
 df.drop(['residual_energy_usage', 'pump_storage'], inplace = True, axis =  1)
 # Extract the year from the index
 df['Year'] = df.index.year
+# 1. Extract weekday name
+df['weekday'] = df.index.day_name()
 
-year_dummies = pd.get_dummies(df['Year'], prefix='Year')
-month_dummies = pd.get_dummies(df['month'], prefix='Month')
-hour_dummies = pd.get_dummies(df['hour'], prefix='Hour')
+# 2. Ordinal encode 'hour', 'weekday', 'month', and 'Year'
+# (In this case, 'hour', 'month', and 'Year' are already ordinal, so just encoding 'weekday')
+weekday_ordering = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+df['weekday'] = df['weekday'].astype(pd.CategoricalDtype(categories=weekday_ordering, ordered=True))
+df['weekday'] = df['weekday'].cat.codes
 
-# Drop the original columns and join with dummy variables
-df = df.drop(['Year', 'month', 'hour'], axis=1)
-df = df.join([year_dummies, month_dummies, hour_dummies])
+# No need to change the 'Year' column as you want it in ordinal form
 
-df['Count'] = range(0, df.shape[0])
+# 3. Add a count variable
+df['Count'] = range(df.shape[0])
+
+# Drop unnecessary columns
+columns_to_drop = ['Friday', 'Monday', 'Saturday', 'Sunday', 'Thursday', 'Tuesday', 'Wednesday']
+df.drop(columns=columns_to_drop, inplace=True)
 
 X = df.drop('total_energy_usage', axis = 1)
 y = df['total_energy_usage']
@@ -94,7 +99,7 @@ random_search.fit(X_train, y_train)
 
 rf_cv_results = pd.DataFrame(random_search.cv_results_)
 
-save_path = "/Data/Delong_BA_Data/rf_weights/qrf_2/rf_cv_results_1.csv"
+save_path = "/Data/Delong_BA_Data/rf_weights/qrf_3/rf_cv_results_1.csv"
 rf_cv_results.to_csv(save_path, index=False)
 
 
