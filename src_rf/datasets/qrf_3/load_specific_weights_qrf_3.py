@@ -4,7 +4,7 @@ from scipy.sparse import vstack
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-def load_weights_qrf_3(base_dir, test_data_index):
+def load_specific_weights_qrf_3(base_dir, test_data_index):
     def load_sparse_matrices_from_dir(dir_path):
         """Load all sparse matrices from a directory."""
         tree_files = sorted([os.path.join(dir_path, file) for file in os.listdir(dir_path)])
