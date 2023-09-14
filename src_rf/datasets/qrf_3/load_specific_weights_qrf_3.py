@@ -45,7 +45,7 @@ def load_specific_weights_qrf_3(base_dir, test_data_index):
     
     # Before the Usage section:
     batch_size = 500  # This was the batch size you've defined earlier
-
+    num_trees = 300
     X = df.drop('total_energy_usage', axis=1).values
     _, X_test, _, _ = train_test_split(X, y, test_size=0.3, shuffle=False, random_state=42)
 
