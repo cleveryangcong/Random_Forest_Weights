@@ -49,6 +49,7 @@ def load_and_concat_sparse_matrices_from_dir(dir_path, num_trees):
 if __name__ == "__main__":
     # 1. Load Data:
     df = pd.read_csv("/home/dchen/Random_Forest_Weights/src_rf/data/energy_data_hourly.csv", index_col="datetime")
+    
     df.index = pd.to_datetime(df.index)
     df.drop(['residual_energy_usage', 'pump_storage'], inplace = True, axis =  1)
     # Extract the year from the index
